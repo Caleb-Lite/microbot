@@ -1,9 +1,6 @@
 package net.runelite.client.plugins.microbot.crafting;
 
-import net.runelite.client.config.Config;
-import net.runelite.client.config.ConfigGroup;
-import net.runelite.client.config.ConfigItem;
-import net.runelite.client.config.ConfigSection;
+import net.runelite.client.config.*;
 import net.runelite.client.plugins.microbot.crafting.enums.*;
 
 @ConfigGroup(CraftingConfig.GROUP)
@@ -120,5 +117,100 @@ public interface CraftingConfig extends Config {
     )
     default FlaxSpinLocations flaxSpinLocation() {
         return FlaxSpinLocations.NONE;
+    }
+
+    @ConfigSection(
+            name = "Custom",
+            description = "Custom crafting settings",
+            position = 100
+    )
+    String customSection = "customSection";
+
+    @ConfigItem(
+            keyName = "firstItemId",
+            name = "Item ID (First Item)",
+            description = "The ID of the first item to use",
+            section = customSection,
+            position = 0
+    )
+    default int firstItemId() {
+        return 0;
+    }
+
+    @ConfigItem(
+            keyName = "firstItemQuantity",
+            name = "Quantity to Withdraw (First Item)",
+            description = "The quantity of the first item to withdraw",
+            section = customSection,
+            position = 1
+    )
+    default int firstItemQuantity() {
+        return 0;
+    }
+
+    @ConfigItem(
+            keyName = "secondItemId",
+            name = "Item ID (Second Item)",
+            description = "The ID of the second item to use",
+            section = customSection,
+            position = 2
+    )
+    default int secondItemId() {
+        return 0;
+    }
+
+    @ConfigItem(
+            keyName = "secondItemQuantity",
+            name = "Quantity to Withdraw (Second Item)",
+            description = "The quantity of the second item to withdraw",
+            section = customSection,
+            position = 3
+    )
+    default int secondItemQuantity() {
+        return 0;
+    }
+
+    @ConfigItem(
+            keyName = "finishedItemId",
+            name = "Item ID (Finished Item)",
+            description = "The ID of the finished item",
+            section = customSection,
+            position = 4
+    )
+    default int finishedItemId() {
+        return 0;
+    }
+
+    @ConfigItem(
+            keyName = "utilityItemId",
+            name = "Item ID (Utility Item)",
+            description = "The ID of the utility item, if any",
+            section = customSection,
+            position = 5
+    )
+    default int utilityItemId() {
+        return 0;
+    }
+
+    @ConfigItem(
+            keyName = "hasCombinationDialog",
+            name = "Has Combination Dialog",
+            description = "Check if combining items produces a dialog",
+            section = customSection,
+            position = 6
+    )
+    default boolean hasCombinationDialog() {
+        return false;
+    }
+
+    @ConfigItem(
+            keyName = "combinationDialogKey",
+            name = "Combination Dialog Key",
+            description = "The key to press when the combination dialog appears",
+            section = customSection,
+            position = 7
+    )
+    default Keybind combinationDialogKey() {
+        return Keybind.NOT_SET;
     }
 }

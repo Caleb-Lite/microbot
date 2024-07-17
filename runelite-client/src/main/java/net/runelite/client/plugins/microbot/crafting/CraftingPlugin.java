@@ -32,6 +32,8 @@ public class CraftingPlugin extends Plugin {
     private final GlassblowingScript glassblowingScript = new GlassblowingScript();
     private final StaffScript staffScript = new StaffScript();
     private final FlaxSpinScript flaxSpinScript = new FlaxSpinScript();
+    private final CombiningScript combiningScript = new CombiningScript(); // New script
+
     @Inject
     private CraftingConfig config;
     @Inject
@@ -61,8 +63,6 @@ public class CraftingPlugin extends Plugin {
             overlayManager.add(craftingOverlay);
         }
 
-//        if (config.activityType() == Activities.DEFAULT) {
-
         if (config.activityType() == Activities.GEM_CUTTING) {
             gemsScript.run(config);
         } else if (config.activityType() == Activities.GLASSBLOWING) {
@@ -71,6 +71,8 @@ public class CraftingPlugin extends Plugin {
             staffScript.run(config);
         } else if (config.activityType() == Activities.FLAX_SPINNING) {
             flaxSpinScript.run(config);
+        } else if (config.activityType() == Activities.COMBINING_ITEMS) {
+            combiningScript.run(config);
         }
     }
 
@@ -80,6 +82,7 @@ public class CraftingPlugin extends Plugin {
         gemsScript.shutdown();
         defaultScript.shutdown();
         flaxSpinScript.shutdown();
+        combiningScript.shutdown();
         overlayManager.remove(craftingOverlay);
     }
 }
