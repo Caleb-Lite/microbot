@@ -173,24 +173,24 @@ public interface CraftingConfig extends Config {
     }
 
     @ConfigItem(
-            keyName = "finishedItemId",
-            name = "Item ID (Finished Item)",
-            description = "The ID of the finished item",
-            section = customSection,
-            position = 4
-    )
-    default int finishedItemId() {
-        return 0;
-    }
-
-    @ConfigItem(
             keyName = "utilityItemId",
             name = "Item ID (Utility Item)",
             description = "The ID of the utility item, if any",
             section = customSection,
-            position = 5
+            position = 4
     )
     default int utilityItemId() {
+        return 0;
+    }
+
+    @ConfigItem(
+            keyName = "finishedItemId",
+            name = "Item ID (Finished Item)",
+            description = "The ID of the finished item",
+            section = customSection,
+            position = 5
+    )
+    default int finishedItemId() {
         return 0;
     }
 
@@ -199,7 +199,7 @@ public interface CraftingConfig extends Config {
             name = "Has Combination Dialog",
             description = "Check if combining items produces a dialog",
             section = customSection,
-            position = 6
+            position = 7
     )
     default boolean hasCombinationDialog() {
         return false;
@@ -210,7 +210,7 @@ public interface CraftingConfig extends Config {
             name = "Combination Dialog Key",
             description = "The key to press when the combination dialog appears",
             section = customSection,
-            position = 7
+            position = 8
     )
     default Keybind combinationDialogKey() {
         return Keybind.NOT_SET;

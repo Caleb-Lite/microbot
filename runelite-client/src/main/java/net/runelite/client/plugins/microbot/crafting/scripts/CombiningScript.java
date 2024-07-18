@@ -16,79 +16,117 @@ public class CombiningScript extends Script {
     @Inject
     private CraftingConfig config;
 
-    public static double version = 1.0;
+    public static final double VERSION = 1.0;
 
-    private boolean isCombining = false;
+    private volatile boolean isCombining = false;
 
     public void run(CraftingConfig config) {
         this.config = config;
 
-        Keybind combinationDialogKey = config.combinationDialogKey();
-
         mainScheduledFuture = scheduledExecutorService.scheduleWithFixedDelay(() -> {
-            if (!super.run()) return;
-            if (!Microbot.isLoggedIn()) return;
+            if (!super.run() || !Microbot.isLoggedIn()) {
+                return;
+            }
 
             try {
-                if (Rs2Inventory.isFull()) {
-                    Rs2Bank.depositAll();
-                }
+                handleInventory();
 
-                if (!isCombining && Rs2Inventory.hasItem(config.firstItemId()) && Rs2Inventory.hasItem(config.secondItemId())) {
-                    isCombining = true;
-                    combineItems(combinationDialogKey);
-
-                    if (config.utilityItemId() != 0) {
-                        sleepUntil(() -> Rs2Inventory.onlyContains(config.finishedItemId()) && Rs2Inventory.hasItem(config.utilityItemId()));
-                    } else {
-                        sleepUntil(() -> Rs2Inventory.onlyContains(config.finishedItemId()));
+                if (!isCombining) {
+                    prepareForCombining();
+                    if (shouldCombine()) {
+                        combineItems(config.combinationDialogKey());
                     }
-                    isCombining = false;
-                } else if (!Rs2Inventory.hasItem(config.firstItemId()) || !Rs2Inventory.hasItem(config.secondItemId())) {
-                    fetchItems();
                 }
-
             } catch (Exception ex) {
                 isCombining = false;
+                Microbot.log("Error during combining: " + ex.getMessage());
             }
         }, 0, 600, TimeUnit.MILLISECONDS);
     }
 
-    private void fetchItems() {
+    private void handleInventory() {
+        if (Rs2Inventory.isFull()) {
+            Rs2Bank.openBank();
+            Rs2Bank.depositAll();
+        }
+    }
+
+    private void prepareForCombining() {
+        Microbot.log("Checking if items are available for combining.");
+
+        if (config.utilityItemId() != 0 && !Rs2Inventory.hasItem(config.utilityItemId())) {
+            withdrawUtilityItem();
+        }
+
+        if (!Rs2Inventory.hasItem(config.firstItemId()) || !Rs2Inventory.hasItem(config.secondItemId())) {
+            fetchItems();
+        }
+    }
+
+    private boolean shouldCombine() {
+        return Rs2Inventory.hasItem(config.firstItemId()) && Rs2Inventory.hasItem(config.secondItemId()) && !Rs2Inventory.hasItem(config.finishedItemId());
+    }
+
+    private void withdrawUtilityItem() {
+        Microbot.log("Utility item not found in inventory, withdrawing from bank.");
         Rs2Bank.openBank();
-        sleepUntil(Rs2Bank::isOpen);
-        sleep(300, 1000);
+        Rs2Bank.withdrawX(true, config.utilityItemId(), 1);
+        sleepUntil(() -> Rs2Inventory.hasItem(config.utilityItemId()), 5000);
+        Microbot.log("Withdrew utility item: " + config.utilityItemId());
+    }
 
-        Rs2Bank.depositAll();
-        sleep(300, 1000);
-
-        Rs2Bank.withdrawX(true, config.firstItemId(), config.firstItemQuantity());
-        sleep(300, 1000);
-
-        Rs2Bank.withdrawX(true, config.secondItemId(), config.secondItemQuantity());
-        sleep(300, 1000);
+    private void fetchItems() {
+        Microbot.log("Fetching items from the bank.");
+        Rs2Bank.openBank();
 
         if (config.utilityItemId() != 0) {
             Rs2Bank.withdrawX(true, config.utilityItemId(), 1);
+            sleep(300, 1000);
+            Microbot.log("Withdrew utility item: " + config.utilityItemId());
         }
 
-        sleepUntil(() -> Rs2Inventory.hasItem(config.firstItemId()) && Rs2Inventory.hasItem(config.secondItemId()));
+        Rs2Bank.withdrawX(true, config.firstItemId(), config.firstItemQuantity());
+        sleep(300, 1000);
+        Microbot.log("Withdrew first item: " + config.firstItemId());
+
+        Rs2Bank.withdrawX(true, config.secondItemId(), config.secondItemQuantity());
+        sleep(300, 1000);
+        Microbot.log("Withdrew second item: " + config.secondItemId());
+
         Rs2Bank.closeBank();
+        sleep(300, 1000);
+        Microbot.log("Closed the bank after fetching items.");
     }
 
     private void combineItems(Keybind combinationDialogKey) {
-        Rs2Inventory.use(config.firstItemId());
-        sleep(300, 1000);
+        if (isCombining) {
+            Microbot.log("Already combining items, exiting combineItems method.");
+            return;
+        }
 
-        Rs2Inventory.use(config.secondItemId());
-        sleep(300, 1000);
+        isCombining = true;
 
-        Rs2Keyboard.typeKey(combinationDialogKey);
-        sleep(2500, 3300);
+        try {
+            Microbot.log("Starting to combine items.");
+            Rs2Inventory.use(config.firstItemId());
+            sleep(300, 1000);
+
+            Rs2Inventory.use(config.secondItemId());
+            sleep(300, 1000);
+
+            Rs2Keyboard.typeKey(combinationDialogKey);
+            sleep(2500, 3300);
+            Microbot.log("Finished combining items.");
+        } finally {
+            isCombining = false;
+        }
     }
 
     @Override
     public void shutdown() {
         super.shutdown();
+        if (mainScheduledFuture != null && !mainScheduledFuture.isCancelled()) {
+            mainScheduledFuture.cancel(true);
+        }
     }
 }
