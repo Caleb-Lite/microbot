@@ -131,7 +131,7 @@ public interface CraftingConfig extends Config {
     @ConfigItem(
             keyName = "firstItemId",
             name = "Item ID (First Item)",
-            description = "The ID of the first item to use",
+            description = "The ID of the first item to use.",
             section = customSection,
             position = 0
     )
@@ -142,7 +142,7 @@ public interface CraftingConfig extends Config {
     @ConfigItem(
             keyName = "firstItemQuantity",
             name = "Quantity to Withdraw (First Item)",
-            description = "The quantity of the first item to withdraw",
+            description = "The quantity of the first item to withdraw.",
             section = customSection,
             position = 1
     )
@@ -153,7 +153,7 @@ public interface CraftingConfig extends Config {
     @ConfigItem(
             keyName = "secondItemId",
             name = "Item ID (Second Item)",
-            description = "The ID of the second item to use",
+            description = "The ID of the second item to use.",
             section = customSection,
             position = 2
     )
@@ -164,7 +164,7 @@ public interface CraftingConfig extends Config {
     @ConfigItem(
             keyName = "secondItemQuantity",
             name = "Quantity to Withdraw (Second Item)",
-            description = "The quantity of the second item to withdraw",
+            description = "The quantity of the second item to withdraw.",
             section = customSection,
             position = 3
     )
@@ -175,7 +175,7 @@ public interface CraftingConfig extends Config {
     @ConfigItem(
             keyName = "utilityItemId",
             name = "Item ID (Utility Item)",
-            description = "The ID of the utility item, if any",
+            description = "Optional: The ID of the utility item.",
             section = customSection,
             position = 4
     )
@@ -186,7 +186,7 @@ public interface CraftingConfig extends Config {
     @ConfigItem(
             keyName = "finishedItemId",
             name = "Item ID (Finished Item)",
-            description = "The ID of the finished item",
+            description = "The ID of the item you're trying to make.",
             section = customSection,
             position = 5
     )
@@ -195,24 +195,35 @@ public interface CraftingConfig extends Config {
     }
 
     @ConfigItem(
-            keyName = "hasCombinationDialog",
-            name = "Has Combination Dialog",
-            description = "Check if combining items produces a dialog",
+            keyName = "useUtilityItemOnFirstItem",
+            name = "Use Utility Item on First Item",
+            description = "When selected, will use the utility item on the first item before combining (i.e., using the Needle on leather or dragon hide)",
             section = customSection,
-            position = 7
+            position = 6
     )
-    default boolean hasCombinationDialog() {
+    default boolean useUtilityItemOnFirstItem() {
         return false;
     }
 
     @ConfigItem(
-            keyName = "combinationDialogKey",
-            name = "Combination Dialog Key",
-            description = "The key to press when the combination dialog appears",
+            keyName = "hasCombinationDialogue",
+            name = "Has Combination Dialogue",
+            description = "Check if combining items produces a dialogue",
+            section = customSection,
+            position = 7
+    )
+    default boolean hasCombinationDialogue() {
+        return false;
+    }
+
+    @ConfigItem(
+            keyName = "combinationDialogueKey",
+            name = "Combination Dialogue Key",
+            description = "The key to press when the combination dialogue appears.",
             section = customSection,
             position = 8
     )
-    default Keybind combinationDialogKey() {
+    default Keybind combinationDialogueKey() {
         return Keybind.NOT_SET;
     }
 }
