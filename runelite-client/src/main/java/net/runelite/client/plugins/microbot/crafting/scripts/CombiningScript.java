@@ -6,6 +6,8 @@ import net.runelite.client.plugins.microbot.crafting.CraftingConfig;
 import net.runelite.client.plugins.microbot.util.bank.Rs2Bank;
 import net.runelite.client.plugins.microbot.util.inventory.Rs2Inventory;
 import net.runelite.client.plugins.microbot.util.keyboard.Rs2Keyboard;
+import net.runelite.client.plugins.microbot.util.dialogues.Rs2Dialogue;
+import net.runelite.client.plugins.microbot.util.widget.Rs2Widget;
 
 import javax.inject.Inject;
 import java.awt.event.KeyEvent;
@@ -19,6 +21,8 @@ public class CombiningScript extends Script {
     public static double version = 1.0;
 
     public void run(CraftingConfig config) {
+        this.config = config;
+
         int keyCode = config.combinationDialogKey().getKeyCode();
         System.out.println("Combination Dialog Key Code: " + keyCode);
 
@@ -41,7 +45,7 @@ public class CombiningScript extends Script {
                     fetchItems();
                 }
 
-                combineItems();
+                combineItems(actualKey);
 
             } catch (Exception ex) {
                 System.out.println(ex.getMessage());
@@ -73,12 +77,14 @@ public class CombiningScript extends Script {
         Rs2Bank.closeBank();
     }
 
-    private void combineItems() {
+    private void combineItems(int actualKey) {
         Rs2Inventory.use(config.firstItemId());
         Rs2Inventory.use(config.secondItemId());
 
         if (config.hasCombinationDialog()) {
-            Rs2Keyboard.keyPress(config.combinationDialogKey().getKeyCode());
+            if (Rs2Dialogue.hasSelectAnOption()) {
+                Rs2Keyboard.keyPress(actualKey);
+            }
         }
 
         sleepUntil(() -> Rs2Inventory.count(config.finishedItemId()) == config.firstItemQuantity() + config.secondItemQuantity());
