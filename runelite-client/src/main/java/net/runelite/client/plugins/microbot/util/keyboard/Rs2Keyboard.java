@@ -1,5 +1,6 @@
 package net.runelite.client.plugins.microbot.util.keyboard;
 
+import net.runelite.client.config.Keybind;
 import net.runelite.client.plugins.microbot.Microbot;
 import net.runelite.client.plugins.microbot.util.Global;
 
@@ -13,6 +14,19 @@ public class Rs2Keyboard {
 
     public static Canvas getCanvas() {
         return Microbot.getClient().getCanvas();
+    }
+
+    public static void typeKey(Keybind keybind) {
+        if (keybind == null || keybind.getKeyCode() == KeyEvent.VK_UNDEFINED) {
+            return;
+        }
+
+        int keyCode = keybind.getKeyCode();
+        keyPress(keyCode);
+
+        // Dispatch a key typed event
+        KeyEvent keyEvent = new KeyEvent(getCanvas(), KeyEvent.KEY_TYPED, System.currentTimeMillis(), 0, KeyEvent.VK_UNDEFINED, (char) keyCode);
+        getCanvas().dispatchEvent(keyEvent);
     }
 
     public static void typeString(final String word) {

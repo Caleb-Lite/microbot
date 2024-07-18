@@ -1,16 +1,14 @@
 package net.runelite.client.plugins.microbot.crafting.scripts;
 
+import net.runelite.client.config.Keybind;
 import net.runelite.client.plugins.microbot.Microbot;
 import net.runelite.client.plugins.microbot.Script;
 import net.runelite.client.plugins.microbot.crafting.CraftingConfig;
 import net.runelite.client.plugins.microbot.util.bank.Rs2Bank;
 import net.runelite.client.plugins.microbot.util.inventory.Rs2Inventory;
 import net.runelite.client.plugins.microbot.util.keyboard.Rs2Keyboard;
-import net.runelite.client.plugins.microbot.util.dialogues.Rs2Dialogue;
-import net.runelite.client.plugins.microbot.util.widget.Rs2Widget;
 
 import javax.inject.Inject;
-import java.awt.event.KeyEvent;
 import java.util.concurrent.TimeUnit;
 
 public class CombiningScript extends Script {
@@ -20,17 +18,12 @@ public class CombiningScript extends Script {
 
     public static double version = 1.0;
 
+    private boolean isCombining = false;
+
     public void run(CraftingConfig config) {
         this.config = config;
 
-        int keyCode = config.combinationDialogKey().getKeyCode();
-        System.out.println("Combination Dialog Key Code: " + keyCode);
-
-        // Convert ASCII value to the actual number
-        int actualKey = convertKeyCode(keyCode);
-        System.out.println("Actual Key: " + actualKey);
-
-        Rs2Keyboard.keyPress(actualKey);
+        Keybind combinationDialogKey = config.combinationDialogKey();
 
         mainScheduledFuture = scheduledExecutorService.scheduleWithFixedDelay(() -> {
             if (!super.run()) return;
@@ -41,33 +34,39 @@ public class CombiningScript extends Script {
                     Rs2Bank.depositAll();
                 }
 
-                if (!Rs2Inventory.hasItem(config.firstItemId()) || !Rs2Inventory.hasItem(config.secondItemId())) {
+                if (!isCombining && Rs2Inventory.hasItem(config.firstItemId()) && Rs2Inventory.hasItem(config.secondItemId())) {
+                    isCombining = true;
+                    combineItems(combinationDialogKey);
+
+                    if (config.utilityItemId() != 0) {
+                        sleepUntil(() -> Rs2Inventory.onlyContains(config.finishedItemId()) && Rs2Inventory.hasItem(config.utilityItemId()));
+                    } else {
+                        sleepUntil(() -> Rs2Inventory.onlyContains(config.finishedItemId()));
+                    }
+                    isCombining = false;
+                } else if (!Rs2Inventory.hasItem(config.firstItemId()) || !Rs2Inventory.hasItem(config.secondItemId())) {
                     fetchItems();
                 }
 
-                combineItems(actualKey);
-
             } catch (Exception ex) {
-                System.out.println(ex.getMessage());
+                isCombining = false;
             }
         }, 0, 600, TimeUnit.MILLISECONDS);
-    }
-
-    private int convertKeyCode(int keyCode) {
-        if (keyCode >= 48 && keyCode <= 57) {
-            return keyCode - 48;
-        }
-        return keyCode; // Return the original keyCode if it's not a digit
     }
 
     private void fetchItems() {
         Rs2Bank.openBank();
         sleepUntil(Rs2Bank::isOpen);
+        sleep(300, 1000);
 
         Rs2Bank.depositAll();
+        sleep(300, 1000);
 
         Rs2Bank.withdrawX(true, config.firstItemId(), config.firstItemQuantity());
+        sleep(300, 1000);
+
         Rs2Bank.withdrawX(true, config.secondItemId(), config.secondItemQuantity());
+        sleep(300, 1000);
 
         if (config.utilityItemId() != 0) {
             Rs2Bank.withdrawX(true, config.utilityItemId(), 1);
@@ -77,21 +76,15 @@ public class CombiningScript extends Script {
         Rs2Bank.closeBank();
     }
 
-    private void combineItems(int actualKey) {
+    private void combineItems(Keybind combinationDialogKey) {
         Rs2Inventory.use(config.firstItemId());
+        sleep(300, 1000);
+
         Rs2Inventory.use(config.secondItemId());
+        sleep(300, 1000);
 
-        if (config.hasCombinationDialog()) {
-            if (Rs2Dialogue.hasSelectAnOption()) {
-                Rs2Keyboard.keyPress(actualKey);
-            }
-        }
-
-        sleepUntil(() -> Rs2Inventory.count(config.finishedItemId()) == config.firstItemQuantity() + config.secondItemQuantity());
-
-        if (config.utilityItemId() != 0) {
-            sleepUntil(() -> Rs2Inventory.count(config.finishedItemId()) == config.firstItemQuantity() + config.secondItemQuantity() && Rs2Inventory.hasItem(config.utilityItemId()));
-        }
+        Rs2Keyboard.typeKey(combinationDialogKey);
+        sleep(2500, 3300);
     }
 
     @Override

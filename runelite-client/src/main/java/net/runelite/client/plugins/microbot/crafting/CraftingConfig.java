@@ -3,6 +3,8 @@ package net.runelite.client.plugins.microbot.crafting;
 import net.runelite.client.config.*;
 import net.runelite.client.plugins.microbot.crafting.enums.*;
 
+import java.awt.event.KeyEvent;
+
 @ConfigGroup(CraftingConfig.GROUP)
 public interface CraftingConfig extends Config {
 
